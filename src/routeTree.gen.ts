@@ -9,10 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVocabImageRouteImport } from './routes/api/vocab-image'
+import { Route as ApiTestKeyRouteImport } from './routes/api/test-key'
 import { Route as ApiLessonRouteImport } from './routes/api/lesson'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -23,6 +36,11 @@ const ApiVocabImageRoute = ApiVocabImageRouteImport.update({
   path: '/api/vocab-image',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTestKeyRoute = ApiTestKeyRouteImport.update({
+  id: '/api/test-key',
+  path: '/api/test-key',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLessonRoute = ApiLessonRouteImport.update({
   id: '/api/lesson',
   path: '/api/lesson',
@@ -31,36 +49,81 @@ const ApiLessonRoute = ApiLessonRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/api/lesson': typeof ApiLessonRoute
+  '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/api/lesson': typeof ApiLessonRoute
+  '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/api/lesson': typeof ApiLessonRoute
+  '/api/test-key': typeof ApiTestKeyRoute
   '/api/vocab-image': typeof ApiVocabImageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/lesson' | '/api/vocab-image'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/api/lesson'
+    | '/api/test-key'
+    | '/api/vocab-image'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/lesson' | '/api/vocab-image'
-  id: '__root__' | '/' | '/api/lesson' | '/api/vocab-image'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/api/lesson'
+    | '/api/test-key'
+    | '/api/vocab-image'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/register'
+    | '/api/lesson'
+    | '/api/test-key'
+    | '/api/vocab-image'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
   ApiLessonRoute: typeof ApiLessonRoute
+  ApiTestKeyRoute: typeof ApiTestKeyRoute
   ApiVocabImageRoute: typeof ApiVocabImageRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -75,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiVocabImageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/test-key': {
+      id: '/api/test-key'
+      path: '/api/test-key'
+      fullPath: '/api/test-key'
+      preLoaderRoute: typeof ApiTestKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/lesson': {
       id: '/api/lesson'
       path: '/api/lesson'
@@ -87,9 +157,22 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
   ApiLessonRoute: ApiLessonRoute,
+  ApiTestKeyRoute: ApiTestKeyRoute,
   ApiVocabImageRoute: ApiVocabImageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -54,7 +54,9 @@ export const Route = createFileRoute("/api/lesson")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.COACHIO_API_KEY;
+        const apiKey =
+          request.headers.get("x-coachio-key")?.trim() ||
+          process.env.COACHIO_API_KEY;
         if (!apiKey) {
           return new Response(
             JSON.stringify({ error: "COACHIO_API_KEY missing" }),

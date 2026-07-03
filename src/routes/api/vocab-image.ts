@@ -6,7 +6,9 @@ export const Route = createFileRoute("/api/vocab-image")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey = process.env.COACHIO_API_KEY;
+        const apiKey =
+          request.headers.get("x-coachio-key")?.trim() ||
+          process.env.COACHIO_API_KEY;
         if (!apiKey) {
           return Response.json(
             { error: "COACHIO_API_KEY missing" },

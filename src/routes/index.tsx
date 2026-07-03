@@ -9,6 +9,11 @@ import {
   type TFItem,
   type VocabItem,
 } from "@/lib/lesson-types";
+import { authHeaders, useApiKey } from "@/lib/settings";
+import { useTheme, type Theme } from "@/lib/theme";
+import { useProgress } from "@/lib/progress";
+import { useAuth } from "@/lib/auth";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   component: LumiApp,
@@ -76,41 +81,6 @@ const SAMPLE: Lesson = {
   ],
 };
 
-/* ---------------- Progress persistence ---------------- */
-type Progress = {
-  xp: number;
-  streak: number;
-  lastActive: string | null; // YYYY-MM-DD
-  badges: string[];
-  quests: { id: string; done: boolean }[];
-};
-const DEFAULT_PROGRESS: Progress = {
-  xp: 0,
-  streak: 0,
-  lastActive: null,
-  badges: [],
-  quests: [
-    { id: "learn5", done: false },
-    { id: "quiz3", done: false },
-    { id: "match", done: false },
-  ],
-};
-const STORAGE_KEY = "lumi:progress:v1";
-
-function useProgress() {
-  const [p, setP] = useState<Progress>(DEFAULT_PROGRESS);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setP({ ...DEFAULT_PROGRESS, ...JSON.parse(raw) });
-    } catch { /* ignore */ }
-  }, []);
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-  }, [p]);
-  return [p, setP] as const;
-}
-
 /* ---------------- Root ---------------- */
 function LumiApp() {
   const [lesson, setLesson] = useState<Lesson>(SAMPLE);
@@ -120,6 +90,9 @@ function LumiApp() {
   const [tab, setTab] = useState<"cards" | "match" | "tf" | "wheel" | "fill" | "quiz">("cards");
 
   const [progress, setProgress] = useProgress();
+  const { theme, setTheme, isDark } = useTheme();
+  const { user, signOut } = useAuth();
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [xpBurst, setXpBurst] = useState<{ id: number; amount: number } | null>(null);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [confetti, setConfetti] = useState(false);
@@ -184,7 +157,7 @@ function LumiApp() {
     try {
       const res = await fetch("/api/lesson", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({ source }),
       });
       const json = await res.json();
@@ -207,7 +180,7 @@ function LumiApp() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
-      <TopBar level={level} into={into} need={need} xp={progress.xp} streak={progress.streak} />
+      <TopBar level={level} into={into} need={need} xp={progress.xp} streak={progress.streak} isDark={isDark} onToggleTheme={() => setTheme(isDark ? "light" : "dark")} onSettings={() => setSettingsOpen(true)} userEmail={user?.email ?? null} onSignOut={signOut} />
 
       {/* Uploader */}
       <section className="glass-card mt-6 p-6 md:p-8">
@@ -321,12 +294,13 @@ function LumiApp() {
         </div>
       )}
       {confetti && <Confetti />}
+      {settingsOpen && <SettingsPanel theme={theme} setTheme={setTheme} onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }
 
 /* ---------------- Top bar ---------------- */
-function TopBar({ level, into, need, xp, streak }: { level: number; into: number; need: number; xp: number; streak: number }) {
+function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettings, userEmail, onSignOut }: { level: number; into: number; need: number; xp: number; streak: number; isDark: boolean; onToggleTheme: () => void; onSettings: () => void; userEmail: string | null; onSignOut: () => void }) {
   const pct = Math.min(100, Math.round((into / need) * 100));
   return (
     <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
@@ -354,8 +328,205 @@ function TopBar({ level, into, need, xp, streak }: { level: number; into: number
       <div className="flex items-center gap-2">
         <span className="chip !bg-peach">🔥 {streak}d</span>
         <span className="chip !bg-lemon">⚡ {xp} XP</span>
+        <button
+          onClick={onToggleTheme}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label="Toggle theme"
+          className="grid h-9 w-9 place-items-center rounded-xl bg-white/70 text-lg transition hover:-translate-y-0.5 hover:bg-white"
+        >
+          {isDark ? "☀️" : "🌙"}
+        </button>
+        <button
+          onClick={onSettings}
+          title="Settings — API key"
+          aria-label="Settings"
+          className="grid h-9 w-9 place-items-center rounded-xl bg-white/70 text-lg transition hover:-translate-y-0.5 hover:bg-white"
+        >
+          ⚙️
+        </button>
+        {userEmail ? (
+          <div className="flex items-center gap-2">
+            <span className="chip !bg-mint/70 max-w-[140px] truncate" title={userEmail}>
+              👤 {userEmail}
+            </span>
+            <button
+              onClick={onSignOut}
+              title="Sign out"
+              className="rounded-xl bg-white/70 px-3 py-2 text-sm font-bold transition hover:-translate-y-0.5 hover:bg-white"
+            >
+              Log out
+            </button>
+          </div>
+        ) : (
+          <Link
+            to="/login"
+            className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+          >
+            Log in
+          </Link>
+        )}
       </div>
     </header>
+  );
+}
+
+/* ---------------- Settings (API key) ---------------- */
+function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (t: Theme) => void; onClose: () => void }) {
+  const { key, save } = useApiKey();
+  const [draft, setDraft] = useState("");
+  const [show, setShow] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  useEffect(() => { setDraft(key); }, [key]);
+
+  async function testKey() {
+    const candidate = draft.trim();
+    if (!candidate) {
+      setResult({ ok: false, msg: "Enter a key first." });
+      return;
+    }
+    setTesting(true);
+    setResult(null);
+    try {
+      const res = await fetch("/api/test-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-coachio-key": candidate },
+      });
+      const json = await res.json();
+      if (res.ok && json.ok) {
+        setResult({ ok: true, msg: `Key works! Model: ${json.model ?? "ready"}` });
+      } else {
+        setResult({ ok: false, msg: json.error || `HTTP ${res.status}` });
+      }
+    } catch (e) {
+      setResult({ ok: false, msg: e instanceof Error ? e.message : "Request failed" });
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  function onSave() {
+    save(draft);
+    setSaved(true);
+    window.setTimeout(() => setSaved(false), 1500);
+  }
+
+  function onClear() {
+    save("");
+    setDraft("");
+    setResult(null);
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="glass-card w-full max-w-md animate-pop-in p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-1 flex items-center justify-between">
+          <h3 className="text-2xl">⚙️ Settings</h3>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="grid h-8 w-8 place-items-center rounded-xl bg-white/70 hover:bg-white"
+          >
+            ✕
+          </button>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Add your Coachio API key to generate lessons & images. It's stored only in
+          this browser (localStorage) and sent straight to the API.
+        </p>
+
+        <label className="mt-4 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Appearance
+        </label>
+        <div className="mt-1 grid grid-cols-3 gap-2">
+          {([
+            ["light", "☀️ Light"],
+            ["dark", "🌙 Dark"],
+            ["system", "🖥 System"],
+          ] as [Theme, string][]).map(([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setTheme(value)}
+              className={`rounded-2xl px-3 py-2.5 text-sm font-bold transition ${
+                theme === value
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-pop)]"
+                  : "bg-white/70 text-foreground hover:bg-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <label className="mt-4 block text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          Coachio API key
+        </label>
+        <div className="mt-1 flex gap-2">
+          <input
+            type={show ? "text" : "password"}
+            value={draft}
+            onChange={(e) => { setDraft(e.target.value); setResult(null); }}
+            placeholder="sk-…"
+            autoComplete="off"
+            spellCheck={false}
+            className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-3 text-sm outline-none focus:border-primary"
+          />
+          <button
+            onClick={() => setShow((s) => !s)}
+            className="chip !bg-lavender/70"
+            title={show ? "Hide" : "Show"}
+          >
+            {show ? "🙈" : "👁"}
+          </button>
+        </div>
+
+        {result && (
+          <div
+            className={`mt-3 rounded-2xl p-3 text-sm ${
+              result.ok ? "bg-success/20 text-foreground" : "bg-destructive/10 text-destructive"
+            }`}
+          >
+            {result.ok ? "✅ " : "⚠ "}{result.msg}
+          </div>
+        )}
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          <button
+            onClick={testKey}
+            disabled={testing}
+            className="rounded-2xl bg-sky px-4 py-3 text-sm font-bold text-sky-foreground transition hover:-translate-y-0.5 disabled:opacity-60"
+          >
+            {testing ? "Testing…" : "🧪 Test key"}
+          </button>
+          <button
+            onClick={onSave}
+            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] transition hover:-translate-y-0.5"
+          >
+            {saved ? "✅ Saved" : "💾 Save"}
+          </button>
+          {key && (
+            <button
+              onClick={onClear}
+              className="ml-auto rounded-2xl bg-secondary px-4 py-3 text-sm font-bold transition hover:-translate-y-0.5"
+            >
+              🗑 Clear
+            </button>
+          )}
+        </div>
+
+        <div className="mt-4 text-xs text-muted-foreground">
+          {key ? "🔑 A key is currently saved in this browser." : "No key saved yet."}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -421,7 +592,7 @@ function Flashcards({ items, onXP }: { items: VocabItem[]; onXP: (n: number) => 
     try {
       const res = await fetch("/api/vocab-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: JSON.stringify({
           word: v.word,
           definition: v.definition,

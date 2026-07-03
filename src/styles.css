@@ -56,6 +56,15 @@
 
 :root {
   --radius: 1.25rem;
+  color-scheme: light;
+
+  /* Surface tokens (used by .glass-card / .chip so they can flip in dark mode) */
+  --glass-bg: color-mix(in oklch, white 82%, transparent);
+  --glass-border: oklch(1 0 0 / 0.6);
+  --chip-bg: color-mix(in oklch, white 70%, transparent);
+  --chip-border: oklch(1 0 0 / 0.7);
+  --surface: oklch(1 0 0);          /* what bg-white becomes */
+  --surface-soft: oklch(0.98 0.01 320);
 
   --background: oklch(0.985 0.012 320);
   --foreground: oklch(0.28 0.05 300);
@@ -98,6 +107,52 @@
   --success-foreground: oklch(0.2 0.05 155);
 }
 
+.dark {
+  color-scheme: dark;
+
+  --glass-bg: color-mix(in oklch, oklch(0.27 0.03 300) 72%, transparent);
+  --glass-border: oklch(1 0 0 / 0.08);
+  --chip-bg: color-mix(in oklch, oklch(0.33 0.03 300) 62%, transparent);
+  --chip-border: oklch(1 0 0 / 0.12);
+  --surface: oklch(0.26 0.03 300);
+  --surface-soft: oklch(0.23 0.03 300);
+
+  --background: oklch(0.17 0.03 300);
+  --foreground: oklch(0.93 0.02 320);
+
+  --card: oklch(0.24 0.03 300);
+  --card-foreground: oklch(0.93 0.02 320);
+  --popover: oklch(0.24 0.03 300);
+  --popover-foreground: oklch(0.93 0.02 320);
+
+  --primary: oklch(0.78 0.14 340);
+  --primary-foreground: oklch(0.2 0.06 340);
+
+  --secondary: oklch(0.32 0.04 300);
+  --secondary-foreground: oklch(0.92 0.02 320);
+
+  --muted: oklch(0.28 0.03 300);
+  --muted-foreground: oklch(0.72 0.03 300);
+
+  --accent: oklch(0.7 0.11 200);
+  --accent-foreground: oklch(0.15 0.05 240);
+
+  --destructive: oklch(0.7 0.18 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.4 0.03 300 / 0.4);
+  --input: oklch(0.36 0.03 300);
+  --ring: oklch(0.78 0.14 340);
+
+  /* Keep the playful pastels slightly deeper so they don't glare on dark */
+  --mint: oklch(0.82 0.11 165);
+  --peach: oklch(0.82 0.11 45);
+  --lavender: oklch(0.78 0.1 300);
+  --sky: oklch(0.82 0.1 220);
+  --lemon: oklch(0.86 0.11 100);
+  --success: oklch(0.75 0.16 155);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -113,6 +168,14 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
   }
+  .dark html, .dark body, html.dark, body.dark {
+    background:
+      radial-gradient(1200px 600px at 10% -10%, oklch(0.5 0.12 340 / 0.28), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, oklch(0.45 0.12 260 / 0.25), transparent 60%),
+      radial-gradient(700px 500px at 50% 110%, oklch(0.45 0.1 200 / 0.22), transparent 60%),
+      var(--color-background);
+    background-attachment: fixed;
+  }
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
@@ -121,9 +184,9 @@
 
 @layer components {
   .glass-card {
-    background: color-mix(in oklch, white 82%, transparent);
+    background: var(--glass-bg);
     backdrop-filter: blur(14px);
-    border: 1px solid oklch(1 0 0 / 0.6);
+    border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-soft);
     border-radius: var(--radius-3xl);
   }
@@ -133,12 +196,20 @@
     gap: 0.4rem;
     padding: 0.35rem 0.75rem;
     border-radius: 999px;
-    background: color-mix(in oklch, white 70%, transparent);
-    border: 1px solid oklch(1 0 0 / 0.7);
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-border);
     font-size: 0.8rem;
     font-weight: 600;
   }
 }
+
+/* Dark-mode surface remapping: the app uses bg-white utilities as "cards".
+   Redirect them to the themed dark surface so they don't glare. */
+.dark .bg-white { background-color: var(--surface) !important; }
+.dark .bg-white\/90 { background-color: color-mix(in oklch, var(--surface) 90%, transparent) !important; }
+.dark .bg-white\/70 { background-color: color-mix(in oklch, var(--surface) 70%, transparent) !important; }
+.dark .bg-white\/50 { background-color: color-mix(in oklch, var(--surface-soft) 55%, transparent) !important; }
+.dark .hover\:bg-white:hover { background-color: var(--muted) !important; }
 
 @keyframes pop-in {
   0% { transform: scale(0.6); opacity: 0; }
