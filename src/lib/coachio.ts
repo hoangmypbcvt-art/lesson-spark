@@ -47,7 +47,10 @@ export async function generateLesson(source: string, apiKey: string): Promise<Le
       max_tokens: 4096,
       messages: [
         { role: "system", content: LESSON_SYSTEM_PROMPT },
-        { role: "user", content: `Build the lesson from this source content:\n\n"""\n${trimmed}\n"""` },
+        {
+          role: "user",
+          content: `Build the lesson from this source content:\n\n"""\n${trimmed}\n"""`,
+        },
       ],
     }),
   });
@@ -60,10 +63,14 @@ export async function generateLesson(source: string, apiKey: string): Promise<Le
   const data = (await upstream.json()) as { choices?: { message?: { content?: string } }[] };
   const content = data.choices?.[0]?.message?.content ?? "";
 
-  const cleaned = content.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+  const cleaned = content
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
   const firstBrace = cleaned.indexOf("{");
   const lastBrace = cleaned.lastIndexOf("}");
-  const jsonStr = firstBrace >= 0 && lastBrace > firstBrace ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned;
+  const jsonStr =
+    firstBrace >= 0 && lastBrace > firstBrace ? cleaned.slice(firstBrace, lastBrace + 1) : cleaned;
 
   try {
     return JSON.parse(jsonStr) as Lesson;

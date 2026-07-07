@@ -56,7 +56,10 @@ function AuthorizePage() {
     try {
       const res = await fetch("/api/oauth/authorize", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           client_id: params.client_id,
           redirect_uri: params.redirect_uri,
@@ -67,7 +70,8 @@ function AuthorizePage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok || !json.redirect) throw new Error(json.error_description || json.error || `HTTP ${res.status}`);
+      if (!res.ok || !json.redirect)
+        throw new Error(json.error_description || json.error || `HTTP ${res.status}`);
       window.location.assign(json.redirect as string);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Authorization failed");
@@ -84,14 +88,22 @@ function AuthorizePage() {
   }
 
   if (err) {
-    return <Center emoji="⚠️" title="Authorization error"><p className="mt-1 text-sm text-destructive">{err}</p></Center>;
+    return (
+      <Center emoji="⚠️" title="Authorization error">
+        <p className="mt-1 text-sm text-destructive">{err}</p>
+      </Center>
+    );
   }
   if (loading || !params || !user) {
     return <Center emoji="⏳" title="Loading…" />;
   }
 
   let host = params.redirect_uri;
-  try { host = new URL(params.redirect_uri).host; } catch { /* ignore */ }
+  try {
+    host = new URL(params.redirect_uri).host;
+  } catch {
+    /* ignore */
+  }
 
   return (
     <Center emoji="🔗" title="Connect to Lumi">
@@ -99,15 +111,30 @@ function AuthorizePage() {
         An app wants to connect to your Lumi account to create and read your lessons on your behalf.
       </p>
       <div className="mt-4 space-y-1 rounded-2xl bg-white/60 p-4 text-left text-sm">
-        <div><span className="text-muted-foreground">Account:</span> <b>{user.email}</b></div>
-        <div className="truncate"><span className="text-muted-foreground">Redirect:</span> {host}</div>
-        <div><span className="text-muted-foreground">Access:</span> create lessons · read your lessons · share links</div>
+        <div>
+          <span className="text-muted-foreground">Account:</span> <b>{user.email}</b>
+        </div>
+        <div className="truncate">
+          <span className="text-muted-foreground">Redirect:</span> {host}
+        </div>
+        <div>
+          <span className="text-muted-foreground">Access:</span> create lessons · read your lessons
+          · share links
+        </div>
       </div>
       <div className="mt-5 flex justify-center gap-2">
-        <button onClick={approve} disabled={busy} className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] disabled:opacity-60">
+        <button
+          onClick={approve}
+          disabled={busy}
+          className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-[var(--shadow-pop)] disabled:opacity-60"
+        >
           {busy ? "Connecting…" : "✅ Approve"}
         </button>
-        <button onClick={deny} disabled={busy} className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold disabled:opacity-60">
+        <button
+          onClick={deny}
+          disabled={busy}
+          className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold disabled:opacity-60"
+        >
           Deny
         </button>
       </div>
@@ -115,7 +142,15 @@ function AuthorizePage() {
   );
 }
 
-function Center({ emoji, title, children }: { emoji: string; title: string; children?: React.ReactNode }) {
+function Center({
+  emoji,
+  title,
+  children,
+}: {
+  emoji: string;
+  title: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 text-center">
       <div className="glass-card p-8">

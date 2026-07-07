@@ -26,7 +26,9 @@ export const Route = createFileRoute("/api/mcp-health")({
         return json({
           ok: !!admin && dbReachable === true,
           baseUrl: serverBaseUrl(request),
-          adminClient: admin ? "configured" : "NOT configured — set SUPABASE_SERVICE_ROLE_KEY (+ SUPABASE_URL)",
+          adminClient: admin
+            ? "configured"
+            : "NOT configured — set SUPABASE_SERVICE_ROLE_KEY (+ SUPABASE_URL)",
           env,
           dbReachable,
         });

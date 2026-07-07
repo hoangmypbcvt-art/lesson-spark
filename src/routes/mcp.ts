@@ -7,7 +7,8 @@ import type { Lesson } from "@/lib/lesson-types";
 const CORS: Record<string, string> = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "POST, GET, OPTIONS",
-  "access-control-allow-headers": "content-type, authorization, mcp-protocol-version, mcp-session-id, accept",
+  "access-control-allow-headers":
+    "content-type, authorization, mcp-protocol-version, mcp-session-id, accept",
   "access-control-expose-headers": "www-authenticate, mcp-session-id",
 };
 
@@ -18,12 +19,19 @@ const SERVER_INFO = { name: "lumi", title: "Lumi ESL", version: "1.0.0" };
 const TOOLS = [
   {
     name: "create_lesson",
-    description: "Generate a new gamified English lesson from a topic or source text and save it to the user's Lumi account. Returns the lesson id and a private preview link.",
+    description:
+      "Generate a new gamified English lesson from a topic or source text and save it to the user's Lumi account. Returns the lesson id and a private preview link.",
     inputSchema: {
       type: "object",
       properties: {
-        source: { type: "string", description: "A topic, paragraph, or article to build the lesson from." },
-        make_public: { type: "boolean", description: "If true, the preview link is shareable publicly. Default false." },
+        source: {
+          type: "string",
+          description: "A topic, paragraph, or article to build the lesson from.",
+        },
+        make_public: {
+          type: "boolean",
+          description: "If true, the preview link is shareable publicly. Default false.",
+        },
       },
       required: ["source"],
     },
@@ -31,7 +39,10 @@ const TOOLS = [
   {
     name: "list_lessons",
     description: "List the user's saved Lumi lessons (most recent first).",
-    inputSchema: { type: "object", properties: { limit: { type: "number", description: "Max lessons to return (default 20)." } } },
+    inputSchema: {
+      type: "object",
+      properties: { limit: { type: "number", description: "Max lessons to return (default 20)." } },
+    },
   },
   {
     name: "get_lesson",
@@ -55,11 +66,16 @@ export const Route = createFileRoute("/mcp")({
       OPTIONS: async () =>
         new Response(null, {
           status: 204,
-          headers: { ...CORS, "access-control-allow-headers": "content-type, authorization, mcp-protocol-version, mcp-session-id, accept" },
+          headers: {
+            ...CORS,
+            "access-control-allow-headers":
+              "content-type, authorization, mcp-protocol-version, mcp-session-id, accept",
+          },
         }),
       // Stateless server: we don't offer a server→client SSE stream, so GET is
       // 405 (spec-allowed). All request/response happens over POST as JSON.
-      GET: async () => new Response("Method Not Allowed", { status: 405, headers: { ...CORS, allow: "POST" } }),
+      GET: async () =>
+        new Response("Method Not Allowed", { status: 405, headers: { ...CORS, allow: "POST" } }),
       POST: async ({ request }) => {
         const base = serverBaseUrl(request);
         const wwwAuth = `Bearer resource_metadata="${base}/.well-known/oauth-protected-resource"`;
@@ -68,8 +84,15 @@ export const Route = createFileRoute("/mcp")({
 
         const bodyText = await request.text();
         let payload: unknown = null;
-        try { payload = JSON.parse(bodyText); } catch { /* logged below */ }
-        const method = !Array.isArray(payload) && payload ? (payload as JsonRpcRequest).method : "(batch/parse-error)";
+        try {
+          payload = JSON.parse(bodyText);
+        } catch {
+          /* logged below */
+        }
+        const method =
+          !Array.isArray(payload) && payload
+            ? (payload as JsonRpcRequest).method
+            : "(batch/parse-error)";
 
         const token = getBearer(request);
         const auth = token ? await resolveAccessToken(token) : null;
@@ -113,13 +136,22 @@ export const Route = createFileRoute("/mcp")({
         if (!msg || msg.id === undefined || msg.id === null) {
           return new Response(null, { status: 202, headers: CORS });
         }
-        return encode(await handleOne(msg, auth.user_id, base), wantsSse, msg.method === "initialize");
+        return encode(
+          await handleOne(msg, auth.user_id, base),
+          wantsSse,
+          msg.method === "initialize",
+        );
       },
     },
   },
 });
 
-type JsonRpcRequest = { jsonrpc: "2.0"; id?: string | number | null; method: string; params?: Record<string, unknown> };
+type JsonRpcRequest = {
+  jsonrpc: "2.0";
+  id?: string | number | null;
+  method: string;
+  params?: Record<string, unknown>;
+};
 
 /** Run one request and wrap it as a JSON-RPC response object (never throws). */
 async function handleOne(msg: JsonRpcRequest, userId: string, base: string) {
@@ -127,11 +159,23 @@ async function handleOne(msg: JsonRpcRequest, userId: string, base: string) {
     const result = await handle(msg, userId, base);
     if (msg.method === "tools/list") {
       const n = (result as { tools?: unknown[] }).tools?.length ?? 0;
-      await logMcp({ method: "tools/list:resp", accept: "", has_auth: true, auth_valid: true, protocol_version: null, session_id: null, user_agent: `count=${n}` });
+      await logMcp({
+        method: "tools/list:resp",
+        accept: "",
+        has_auth: true,
+        auth_valid: true,
+        protocol_version: null,
+        session_id: null,
+        user_agent: `count=${n}`,
+      });
     }
     return { jsonrpc: "2.0" as const, id: msg.id ?? null, result };
   } catch (e) {
-    return { jsonrpc: "2.0" as const, id: msg.id ?? null, error: { code: -32603, message: e instanceof Error ? e.message : "Internal error" } };
+    return {
+      jsonrpc: "2.0" as const,
+      id: msg.id ?? null,
+      error: { code: -32603, message: e instanceof Error ? e.message : "Internal error" },
+    };
   }
 }
 
@@ -139,13 +183,16 @@ async function handle(msg: JsonRpcRequest, userId: string, base: string): Promis
   switch (msg.method) {
     case "initialize": {
       // Echo the client's protocol version when it's one we know; else ours.
-      const requested = String((msg.params as Record<string, unknown> | undefined)?.protocolVersion ?? "");
+      const requested = String(
+        (msg.params as Record<string, unknown> | undefined)?.protocolVersion ?? "",
+      );
       const protocolVersion = SUPPORTED_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSION;
       return {
         protocolVersion,
         capabilities: { tools: {} },
         serverInfo: SERVER_INFO,
-        instructions: "Lumi turns any topic into a gamified English lesson. Use create_lesson to make one, get_preview_link to share it.",
+        instructions:
+          "Lumi turns any topic into a gamified English lesson. Use create_lesson to make one, get_preview_link to share it.",
       };
     }
     case "tools/list":
@@ -178,7 +225,11 @@ async function callTool(name: string, args: Record<string, unknown>, userId: str
       const source = String(args.source ?? "").trim();
       if (!source) return textResult("Missing 'source'.", true);
       const apiKey = process.env.COACHIO_API_KEY;
-      if (!apiKey) return textResult("Server COACHIO_API_KEY not set — cannot generate lessons via MCP.", true);
+      if (!apiKey)
+        return textResult(
+          "Server COACHIO_API_KEY not set — cannot generate lessons via MCP.",
+          true,
+        );
 
       let lesson: Lesson;
       try {
@@ -203,7 +254,18 @@ async function callTool(name: string, args: Record<string, unknown>, userId: str
       if (error) return textResult(`Save failed: ${error.message}`, true);
       const id = (data as { id: string }).id;
       return textResult(
-        JSON.stringify({ id, title: lesson.title, level: lesson.level, words: lesson.vocabulary.length, visibility, preview: previewUrl(id) }, null, 2),
+        JSON.stringify(
+          {
+            id,
+            title: lesson.title,
+            level: lesson.level,
+            words: lesson.vocabulary.length,
+            visibility,
+            preview: previewUrl(id),
+          },
+          null,
+          2,
+        ),
       );
     }
 
@@ -244,10 +306,16 @@ async function callTool(name: string, args: Record<string, unknown>, userId: str
         .maybeSingle();
       if (!owned) return textResult("Lesson not found.", true);
       if (args.make_public === true) {
-        const { error } = await admin.from("lessons").update({ visibility: "public" }).eq("id", id).eq("user_id", userId);
+        const { error } = await admin
+          .from("lessons")
+          .update({ visibility: "public" })
+          .eq("id", id)
+          .eq("user_id", userId);
         if (error) return textResult(`Update failed: ${error.message}`, true);
       }
-      return textResult(JSON.stringify({ id, preview: previewUrl(id), public: args.make_public === true }, null, 2));
+      return textResult(
+        JSON.stringify({ id, preview: previewUrl(id), public: args.make_public === true }, null, 2),
+      );
     }
 
     default:

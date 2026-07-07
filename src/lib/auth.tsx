@@ -14,7 +14,10 @@ type AuthContextValue = {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirm: boolean }>;
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null; needsConfirm: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   updateProfile: (name: string) => Promise<{ error: string | null }>;
@@ -77,7 +80,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user: session?.user ?? null, session, loading, signUp, signIn, signOut, updateProfile, updatePassword }),
+    () => ({
+      user: session?.user ?? null,
+      session,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+      updateProfile,
+      updatePassword,
+    }),
     [session, loading, signUp, signIn, signOut, updateProfile, updatePassword],
   );
 

@@ -55,20 +55,29 @@ function LumiApp() {
     return false;
   }, [user]);
 
-  const addXP = useCallback((amount: number) => {
-    if (amount <= 0) return;
-    setProgress((prev) => applyXp(prev, amount));
-    setXpBurst({ id: Date.now(), amount });
-    window.setTimeout(() => setXpBurst(null), 900);
-  }, [setProgress]);
+  const addXP = useCallback(
+    (amount: number) => {
+      if (amount <= 0) return;
+      setProgress((prev) => applyXp(prev, amount));
+      setXpBurst({ id: Date.now(), amount });
+      window.setTimeout(() => setXpBurst(null), 900);
+    },
+    [setProgress],
+  );
 
-  const completeQuest = useCallback((id: string) => {
-    setProgress((prev) => markQuest(prev, id));
-  }, [setProgress]);
+  const completeQuest = useCallback(
+    (id: string) => {
+      setProgress((prev) => markQuest(prev, id));
+    },
+    [setProgress],
+  );
 
-  const awardBadge = useCallback((id: string) => {
-    setProgress((prev) => addBadge(prev, id));
-  }, [setProgress]);
+  const awardBadge = useCallback(
+    (id: string) => {
+      setProgress((prev) => addBadge(prev, id));
+    },
+    [setProgress],
+  );
 
   async function generateLesson() {
     if (!requireAuth()) return;
@@ -119,7 +128,21 @@ function LumiApp() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
-      <TopBar level={level} into={into} need={need} xp={progress.xp} streak={progress.streak} isDark={isDark} onToggleTheme={() => setTheme(isDark ? "light" : "dark")} onSettings={() => setSettingsOpen(true)} onHistory={() => { if (requireAuth()) setHistoryOpen(true); }} userEmail={user?.email ?? null} onSignOut={signOut} />
+      <TopBar
+        level={level}
+        into={into}
+        need={need}
+        xp={progress.xp}
+        streak={progress.streak}
+        isDark={isDark}
+        onToggleTheme={() => setTheme(isDark ? "light" : "dark")}
+        onSettings={() => setSettingsOpen(true)}
+        onHistory={() => {
+          if (requireAuth()) setHistoryOpen(true);
+        }}
+        userEmail={user?.email ?? null}
+        onSignOut={signOut}
+      />
 
       {/* Uploader */}
       <section className="glass-card mt-6 p-6 md:p-8">
@@ -127,12 +150,15 @@ function LumiApp() {
           <div>
             <h1 className="text-3xl md:text-4xl">Turn any text into a lesson ✨</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Paste a paragraph, article, or topic — Lumi builds vocabulary, quizzes & games instantly.
+              Paste a paragraph, article, or topic — Lumi builds vocabulary, quizzes & games
+              instantly.
             </p>
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => { if (requireAuth()) setHistoryOpen(true); }}
+              onClick={() => {
+                if (requireAuth()) setHistoryOpen(true);
+              }}
               className="chip hover:bg-white"
               title="Your saved lessons"
             >
@@ -140,7 +166,12 @@ function LumiApp() {
             </button>
             <label className="chip cursor-pointer hover:bg-white">
               📎 Upload .txt
-              <input type="file" accept=".txt,.md,text/plain" className="hidden" onChange={onFile} />
+              <input
+                type="file"
+                accept=".txt,.md,text/plain"
+                className="hidden"
+                onChange={onFile}
+              />
             </label>
           </div>
         </div>
@@ -183,7 +214,9 @@ function LumiApp() {
               <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{lesson.intro}</p>
             </div>
             <button
-              onClick={() => { if (savedLessonId) setShareOpen(true); }}
+              onClick={() => {
+                if (savedLessonId) setShareOpen(true);
+              }}
               disabled={!savedLessonId}
               title={savedLessonId ? "Share a preview link" : "Saving…"}
               className="chip !bg-sky/80 hover:bg-white disabled:opacity-50"
@@ -202,7 +235,11 @@ function LumiApp() {
           />
         </>
       ) : (
-        <EmptyState isAuthed={!!user} onGenerate={generateLesson} onLoginGate={() => setAuthGateOpen(true)} />
+        <EmptyState
+          isAuthed={!!user}
+          onGenerate={generateLesson}
+          onLoginGate={() => setAuthGateOpen(true)}
+        />
       )}
 
       <BadgeShelf badges={progress.badges} />
@@ -224,13 +261,17 @@ function LumiApp() {
         <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
           <div className="animate-pop-in rounded-3xl bg-white/90 px-8 py-6 text-center shadow-2xl backdrop-blur">
             <div className="text-6xl">🎉</div>
-            <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">Level up</div>
+            <div className="mt-2 text-xs uppercase tracking-widest text-muted-foreground">
+              Level up
+            </div>
             <div className="text-4xl font-black">Level {levelUp}</div>
           </div>
         </div>
       )}
       {confetti && <Confetti />}
-      {settingsOpen && <SettingsPanel theme={theme} setTheme={setTheme} onClose={() => setSettingsOpen(false)} />}
+      {settingsOpen && (
+        <SettingsPanel theme={theme} setTheme={setTheme} onClose={() => setSettingsOpen(false)} />
+      )}
       {authGateOpen && <AuthGateModal onClose={() => setAuthGateOpen(false)} />}
       {historyOpen && (
         <HistoryModal history={history} onOpen={openSaved} onClose={() => setHistoryOpen(false)} />
@@ -243,7 +284,15 @@ function LumiApp() {
 }
 
 /* ---------------- Empty state (no lesson yet) ---------------- */
-function EmptyState({ isAuthed, onGenerate, onLoginGate }: { isAuthed: boolean; onGenerate: () => void; onLoginGate: () => void }) {
+function EmptyState({
+  isAuthed,
+  onGenerate,
+  onLoginGate,
+}: {
+  isAuthed: boolean;
+  onGenerate: () => void;
+  onLoginGate: () => void;
+}) {
   return (
     <section className="glass-card mt-6 flex flex-col items-center gap-4 p-10 text-center md:p-16">
       <div className="text-6xl">🪄</div>
@@ -278,7 +327,10 @@ function AuthGateModal({ onClose }: { onClose: () => void }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div className="glass-card w-full max-w-sm animate-pop-in p-6 text-center" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="glass-card w-full max-w-sm animate-pop-in p-6 text-center"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="text-5xl">🔒</div>
         <h3 className="mt-3 text-2xl">Login required</h3>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -345,10 +397,7 @@ function HistoryModal({
         ) : (
           <ul className="space-y-2 overflow-y-auto">
             {items.map((rec) => (
-              <li
-                key={rec.id}
-                className="flex items-center gap-2 rounded-2xl bg-white/70 p-3"
-              >
+              <li key={rec.id} className="flex items-center gap-2 rounded-2xl bg-white/70 p-3">
                 <button onClick={() => onOpen(rec)} className="flex-1 text-left">
                   <div className="font-bold">{rec.title}</div>
                   <div className="text-xs text-muted-foreground">
@@ -380,7 +429,31 @@ function HistoryModal({
 }
 
 /* ---------------- Top bar ---------------- */
-function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettings, onHistory, userEmail, onSignOut }: { level: number; into: number; need: number; xp: number; streak: number; isDark: boolean; onToggleTheme: () => void; onSettings: () => void; onHistory: () => void; userEmail: string | null; onSignOut: () => void }) {
+function TopBar({
+  level,
+  into,
+  need,
+  xp,
+  streak,
+  isDark,
+  onToggleTheme,
+  onSettings,
+  onHistory,
+  userEmail,
+  onSignOut,
+}: {
+  level: number;
+  into: number;
+  need: number;
+  xp: number;
+  streak: number;
+  isDark: boolean;
+  onToggleTheme: () => void;
+  onSettings: () => void;
+  onHistory: () => void;
+  userEmail: string | null;
+  onSignOut: () => void;
+}) {
   const pct = Math.min(100, Math.round((into / need) * 100));
   return (
     <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:gap-6 md:p-5">
@@ -395,8 +468,12 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
       </div>
       <div className="flex-1">
         <div className="mb-1 flex items-center justify-between text-xs font-semibold">
-          <span>Level {level} · {levelTitle(level)}</span>
-          <span className="text-muted-foreground">{into} / {need} XP</span>
+          <span>
+            Level {level} · {levelTitle(level)}
+          </span>
+          <span className="text-muted-foreground">
+            {into} / {need} XP
+          </span>
         </div>
         <div className="h-3 overflow-hidden rounded-full bg-secondary">
           <div
@@ -459,7 +536,15 @@ function TopBar({ level, into, need, xp, streak, isDark, onToggleTheme, onSettin
 }
 
 /* ---------------- Settings (API key) ---------------- */
-function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (t: Theme) => void; onClose: () => void }) {
+function SettingsPanel({
+  theme,
+  setTheme,
+  onClose,
+}: {
+  theme: Theme;
+  setTheme: (t: Theme) => void;
+  onClose: () => void;
+}) {
   const { key, save } = useApiKey();
   const [draft, setDraft] = useState("");
   const [show, setShow] = useState(false);
@@ -467,7 +552,9 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
-  useEffect(() => { setDraft(key); }, [key]);
+  useEffect(() => {
+    setDraft(key);
+  }, [key]);
 
   async function testKey() {
     const candidate = draft.trim();
@@ -532,11 +619,13 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
           Appearance
         </label>
         <div className="mt-1 grid grid-cols-3 gap-2">
-          {([
-            ["light", "☀️ Light"],
-            ["dark", "🌙 Dark"],
-            ["system", "🖥 System"],
-          ] as [Theme, string][]).map(([value, label]) => (
+          {(
+            [
+              ["light", "☀️ Light"],
+              ["dark", "🌙 Dark"],
+              ["system", "🖥 System"],
+            ] as [Theme, string][]
+          ).map(([value, label]) => (
             <button
               key={value}
               onClick={() => setTheme(value)}
@@ -561,7 +650,10 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
           <input
             type={show ? "text" : "password"}
             value={draft}
-            onChange={(e) => { setDraft(e.target.value); setResult(null); }}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setResult(null);
+            }}
             placeholder="sk-…"
             autoComplete="off"
             spellCheck={false}
@@ -582,7 +674,8 @@ function SettingsPanel({ theme, setTheme, onClose }: { theme: Theme; setTheme: (
               result.ok ? "bg-success/20 text-foreground" : "bg-destructive/10 text-destructive"
             }`}
           >
-            {result.ok ? "✅ " : "⚠ "}{result.msg}
+            {result.ok ? "✅ " : "⚠ "}
+            {result.msg}
           </div>
         )}
 
@@ -639,7 +732,9 @@ function ProfileSection() {
         <div className="font-bold">👤 Account</div>
         <p className="mt-1 text-muted-foreground">
           You're not logged in.{" "}
-          <Link to="/login" className="font-bold text-primary hover:underline">Log in</Link>{" "}
+          <Link to="/login" className="font-bold text-primary hover:underline">
+            Log in
+          </Link>{" "}
           to edit your profile and sync progress.
         </p>
       </div>
@@ -671,7 +766,10 @@ function ProfileSection() {
     <div className="mt-4 space-y-3 rounded-2xl bg-white/60 p-4">
       <div className="flex items-center justify-between">
         <div className="text-sm font-bold">👤 Profile</div>
-        <span className="max-w-[180px] truncate text-xs text-muted-foreground" title={user.email ?? ""}>
+        <span
+          className="max-w-[180px] truncate text-xs text-muted-foreground"
+          title={user.email ?? ""}
+        >
           {user.email}
         </span>
       </div>
@@ -683,7 +781,10 @@ function ProfileSection() {
         <div className="flex gap-2">
           <input
             value={name}
-            onChange={(e) => { setName(e.target.value); setNameMsg(null); }}
+            onChange={(e) => {
+              setName(e.target.value);
+              setNameMsg(null);
+            }}
             placeholder="Your name"
             className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm outline-none focus:border-primary"
           />
@@ -697,7 +798,8 @@ function ProfileSection() {
         </div>
         {nameMsg && (
           <div className={`mt-1 text-xs ${nameMsg.ok ? "text-success" : "text-destructive"}`}>
-            {nameMsg.ok ? "✅ " : "⚠ "}{nameMsg.msg}
+            {nameMsg.ok ? "✅ " : "⚠ "}
+            {nameMsg.msg}
           </div>
         )}
       </div>
@@ -710,7 +812,10 @@ function ProfileSection() {
           <input
             type="password"
             value={pw}
-            onChange={(e) => { setPw(e.target.value); setPwMsg(null); }}
+            onChange={(e) => {
+              setPw(e.target.value);
+              setPwMsg(null);
+            }}
             placeholder="At least 6 characters"
             autoComplete="new-password"
             className="flex-1 rounded-2xl border border-border bg-white/70 px-4 py-2.5 text-sm outline-none focus:border-primary"
@@ -725,7 +830,8 @@ function ProfileSection() {
         </div>
         {pwMsg && (
           <div className={`mt-1 text-xs ${pwMsg.ok ? "text-success" : "text-destructive"}`}>
-            {pwMsg.ok ? "✅ " : "⚠ "}{pwMsg.msg}
+            {pwMsg.ok ? "✅ " : "⚠ "}
+            {pwMsg.msg}
           </div>
         )}
       </div>
@@ -751,14 +857,17 @@ function DailyQuests({ quests }: { quests: { id: string; done: boolean }[] }) {
       <ul className="space-y-1.5">
         {quests.map((q) => (
           <li key={q.id} className="flex items-center gap-2 text-sm">
-            <span className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${q.done ? "bg-success text-success-foreground" : "bg-secondary text-muted-foreground"}`}>
+            <span
+              className={`grid h-5 w-5 place-items-center rounded-full text-[11px] ${q.done ? "bg-success text-success-foreground" : "bg-secondary text-muted-foreground"}`}
+            >
               {q.done ? "✓" : "•"}
             </span>
-            <span className={q.done ? "line-through text-muted-foreground" : ""}>{labels[q.id] ?? q.id}</span>
+            <span className={q.done ? "line-through text-muted-foreground" : ""}>
+              {labels[q.id] ?? q.id}
+            </span>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-

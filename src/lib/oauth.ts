@@ -47,7 +47,12 @@ export function getBearer(req: Request): string | null {
   return m ? m[1].trim() : null;
 }
 
-export type TokenRow = { access_token: string; user_id: string; scope: string | null; expires_at: string };
+export type TokenRow = {
+  access_token: string;
+  user_id: string;
+  scope: string | null;
+  expires_at: string;
+};
 
 /** Resolve a Bearer access token to its user id (or null if invalid/expired). */
 export async function resolveAccessToken(token: string): Promise<TokenRow | null> {

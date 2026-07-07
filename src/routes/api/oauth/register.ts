@@ -15,7 +15,12 @@ export const Route = createFileRoute("/api/oauth/register")({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
         const admin = getAdminClient();
-        if (!admin) return json({ error: "server_error", error_description: "Admin client not configured" }, 500, CORS);
+        if (!admin)
+          return json(
+            { error: "server_error", error_description: "Admin client not configured" },
+            500,
+            CORS,
+          );
 
         let body: {
           redirect_uris?: string[];
@@ -32,7 +37,11 @@ export const Route = createFileRoute("/api/oauth/register")({
 
         const redirect_uris = Array.isArray(body.redirect_uris) ? body.redirect_uris : [];
         if (redirect_uris.length === 0) {
-          return json({ error: "invalid_redirect_uri", error_description: "redirect_uris required" }, 400, CORS);
+          return json(
+            { error: "invalid_redirect_uri", error_description: "redirect_uris required" },
+            400,
+            CORS,
+          );
         }
 
         const client_id = `lumi_${randomToken(18)}`;
@@ -45,9 +54,14 @@ export const Route = createFileRoute("/api/oauth/register")({
           client_name: body.client_name ?? "MCP Client",
           redirect_uris,
         });
-        if (error) return json({ error: "server_error", error_description: error.message }, 500, CORS);
+        if (error)
+          return json({ error: "server_error", error_description: error.message }, 500, CORS);
 
-        await logEvent({ method: "register", user_agent: request.headers.get("user-agent"), note: `redirects=${redirect_uris.join(",")}` });
+        await logEvent({
+          method: "register",
+          user_agent: request.headers.get("user-agent"),
+          note: `redirects=${redirect_uris.join(",")}`,
+        });
         return json(
           {
             client_id,

@@ -6,14 +6,9 @@ export const Route = createFileRoute("/api/vocab-image")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey =
-          request.headers.get("x-coachio-key")?.trim() ||
-          process.env.COACHIO_API_KEY;
+        const apiKey = request.headers.get("x-coachio-key")?.trim() || process.env.COACHIO_API_KEY;
         if (!apiKey) {
-          return Response.json(
-            { error: "COACHIO_API_KEY missing" },
-            { status: 500 },
-          );
+          return Response.json({ error: "COACHIO_API_KEY missing" }, { status: 500 });
         }
 
         let body: { word?: string; definition?: string; example?: string };
@@ -102,10 +97,7 @@ export const Route = createFileRoute("/api/vocab-image")({
             return Response.json({ url: urls[0], taskId });
           }
           if (st.status === "failed") {
-            return Response.json(
-              { error: st.message || "Task failed" },
-              { status: 502 },
-            );
+            return Response.json({ error: st.message || "Task failed" }, { status: 502 });
           }
           wait = Math.min(wait + 500, 4000);
         }

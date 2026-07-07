@@ -5,14 +5,12 @@ export const Route = createFileRoute("/api/lesson")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey =
-          request.headers.get("x-coachio-key")?.trim() ||
-          process.env.COACHIO_API_KEY;
+        const apiKey = request.headers.get("x-coachio-key")?.trim() || process.env.COACHIO_API_KEY;
         if (!apiKey) {
-          return new Response(
-            JSON.stringify({ error: "COACHIO_API_KEY missing" }),
-            { status: 500, headers: { "content-type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ error: "COACHIO_API_KEY missing" }), {
+            status: 500,
+            headers: { "content-type": "application/json" },
+          });
         }
 
         let body: { source?: string };
@@ -27,10 +25,10 @@ export const Route = createFileRoute("/api/lesson")({
 
         const source = (body.source ?? "").trim();
         if (!source) {
-          return new Response(
-            JSON.stringify({ error: "Missing 'source' text" }),
-            { status: 400, headers: { "content-type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ error: "Missing 'source' text" }), {
+            status: 400,
+            headers: { "content-type": "application/json" },
+          });
         }
 
         try {

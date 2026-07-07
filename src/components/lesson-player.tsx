@@ -37,14 +37,16 @@ export function LessonPlayer({
   return (
     <>
       <nav className="mt-6 flex flex-wrap gap-2">
-        {([
-          ["cards", "🎴 Flashcards"],
-          ["match", "🧩 Matching"],
-          ["tf", "✅ True / False"],
-          ["fill", "💬 Fill the blanks"],
-          ["quiz", "❓ Quiz"],
-          ["wheel", "🎡 Lucky Wheel"],
-        ] as [PlayerTab, string][]).map(([id, label]) => (
+        {(
+          [
+            ["cards", "🎴 Flashcards"],
+            ["match", "🧩 Matching"],
+            ["tf", "✅ True / False"],
+            ["fill", "💬 Fill the blanks"],
+            ["quiz", "❓ Quiz"],
+            ["wheel", "🎡 Lucky Wheel"],
+          ] as [PlayerTab, string][]
+        ).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
@@ -61,7 +63,13 @@ export function LessonPlayer({
 
       <section className="mt-6">
         {tab === "cards" && (
-          <Flashcards items={lesson.vocabulary} onXP={onXP} onQuest={onQuest} requireAuth={requireAuth} hideAI={hideAI} />
+          <Flashcards
+            items={lesson.vocabulary}
+            onXP={onXP}
+            onQuest={onQuest}
+            requireAuth={requireAuth}
+            hideAI={hideAI}
+          />
         )}
         {tab === "match" && (
           <Matching
@@ -114,7 +122,9 @@ function Flashcards({
   const [loadingImg, setLoadingImg] = useState<Record<string, boolean>>({});
   const [imgErr, setImgErr] = useState<Record<string, string>>({});
   const item = items[i];
-  useEffect(() => { setFlipped(false); }, [i]);
+  useEffect(() => {
+    setFlipped(false);
+  }, [i]);
 
   function next(mark: "know" | "again") {
     if (mark === "know" && !known.has(i)) {
@@ -163,7 +173,9 @@ function Flashcards({
     <div className="grid gap-6 md:grid-cols-[1fr_260px]">
       <div>
         <div className="mb-3 flex items-center justify-between text-xs font-semibold text-muted-foreground">
-          <span>Card {i + 1} of {items.length}</span>
+          <span>
+            Card {i + 1} of {items.length}
+          </span>
           <span>{known.size} learned</span>
         </div>
         <div
@@ -173,7 +185,11 @@ function Flashcards({
           {!flipped ? (
             <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
               {currentImg ? (
-                <img src={currentImg} alt={item.word} className="aspect-square h-40 w-40 animate-pop-in rounded-3xl object-cover shadow-md" />
+                <img
+                  src={currentImg}
+                  alt={item.word}
+                  className="aspect-square h-40 w-40 animate-pop-in rounded-3xl object-cover shadow-md"
+                />
               ) : isLoadingCurrent ? (
                 <div className="grid aspect-square h-40 w-40 place-items-center rounded-3xl bg-gradient-to-br from-lavender via-primary/40 to-accent">
                   <div className="text-sm font-bold text-white">Generating…</div>
@@ -182,16 +198,33 @@ function Flashcards({
                 <div className="text-6xl">{item.emoji}</div>
               )}
               <div className="text-3xl font-black">{item.word}</div>
-              <div className="text-sm text-muted-foreground">{item.pos} · {item.pronunciation}</div>
+              <div className="text-sm text-muted-foreground">
+                {item.pos} · {item.pronunciation}
+              </div>
               <div className="mt-2 flex flex-wrap justify-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); speak(); }} className="chip !bg-sky">🔊 Listen</button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    speak();
+                  }}
+                  className="chip !bg-sky"
+                >
+                  🔊 Listen
+                </button>
                 {!hideAI && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); generateImage(item); }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      generateImage(item);
+                    }}
                     disabled={isLoadingCurrent || !!currentImg}
                     className="chip !bg-lavender disabled:opacity-60"
                   >
-                    {currentImg ? "🖼 Image ready" : isLoadingCurrent ? "⏳ Generating…" : "✨ Generate image"}
+                    {currentImg
+                      ? "🖼 Image ready"
+                      : isLoadingCurrent
+                        ? "⏳ Generating…"
+                        : "✨ Generate image"}
                   </button>
                 )}
               </div>
@@ -208,10 +241,16 @@ function Flashcards({
           )}
         </div>
         <div className="mt-4 flex gap-3">
-          <button onClick={() => next("again")} className="flex-1 rounded-2xl bg-peach px-4 py-3 font-bold text-peach-foreground transition hover:-translate-y-0.5">
+          <button
+            onClick={() => next("again")}
+            className="flex-1 rounded-2xl bg-peach px-4 py-3 font-bold text-peach-foreground transition hover:-translate-y-0.5"
+          >
             🔁 Practice again
           </button>
-          <button onClick={() => next("know")} className="flex-1 rounded-2xl bg-mint px-4 py-3 font-bold text-mint-foreground transition hover:-translate-y-0.5">
+          <button
+            onClick={() => next("know")}
+            className="flex-1 rounded-2xl bg-mint px-4 py-3 font-bold text-mint-foreground transition hover:-translate-y-0.5"
+          >
             ✅ I know this (+{XP.flashcardKnown} XP)
           </button>
         </div>
@@ -229,7 +268,11 @@ function Flashcards({
                   onClick={() => setI(idx)}
                   className={`flex flex-1 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition ${idx === i ? "bg-primary/20 font-bold" : "hover:bg-white"}`}
                 >
-                  {img ? <img src={img} alt="" className="h-6 w-6 rounded-md object-cover" /> : <span>{v.emoji}</span>}
+                  {img ? (
+                    <img src={img} alt="" className="h-6 w-6 rounded-md object-cover" />
+                  ) : (
+                    <span>{v.emoji}</span>
+                  )}
                   <span className="flex-1 truncate">{v.word}</span>
                   {known.has(idx) && <span className="text-xs text-success">✓</span>}
                 </button>
@@ -253,7 +296,15 @@ function Flashcards({
 }
 
 /* ---------------- Matching ---------------- */
-function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: number) => void; onComplete: () => void }) {
+function Matching({
+  pairs,
+  onXP,
+  onComplete,
+}: {
+  pairs: MatchPair[];
+  onXP: (n: number) => void;
+  onComplete: () => void;
+}) {
   const [leftPick, setLeftPick] = useState<string | null>(null);
   const [rightPick, setRightPick] = useState<string | null>(null);
   const [solved, setSolved] = useState<Set<string>>(new Set());
@@ -268,14 +319,21 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
       if (correct) {
         setSolved((s) => {
           const ns = new Set(s).add(leftPick);
-          if (ns.size === pairs.length) { onComplete(); }
+          if (ns.size === pairs.length) {
+            onComplete();
+          }
           return ns;
         });
         onXP(XP.matchPair);
-        setLeftPick(null); setRightPick(null);
+        setLeftPick(null);
+        setRightPick(null);
       } else {
         setWrong(true);
-        window.setTimeout(() => { setWrong(false); setLeftPick(null); setRightPick(null); }, 500);
+        window.setTimeout(() => {
+          setWrong(false);
+          setLeftPick(null);
+          setRightPick(null);
+        }, 500);
       }
     }
   }, [leftPick, rightPick, pairs, onXP, onComplete]);
@@ -284,7 +342,9 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
 
   return (
     <div>
-      <div className="mb-3 text-sm text-muted-foreground">Tap a word on the left and its match on the right.</div>
+      <div className="mb-3 text-sm text-muted-foreground">
+        Tap a word on the left and its match on the right.
+      </div>
       <div className={`grid grid-cols-2 gap-4 ${wrong ? "animate-shake" : ""}`}>
         <div className="space-y-2">
           {lefts.map((w) => {
@@ -296,7 +356,9 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
                 disabled={isSolved}
                 onClick={() => setLeftPick(w)}
                 className={`w-full rounded-2xl p-3 text-left font-semibold transition ${isSolved ? "bg-success/20 text-muted-foreground line-through" : isPicked ? "bg-primary text-primary-foreground" : "bg-white hover:-translate-y-0.5"}`}
-              >{w}</button>
+              >
+                {w}
+              </button>
             );
           })}
         </div>
@@ -311,7 +373,9 @@ function Matching({ pairs, onXP, onComplete }: { pairs: MatchPair[]; onXP: (n: n
                 disabled={!!isSolved}
                 onClick={() => setRightPick(w)}
                 className={`w-full rounded-2xl p-3 text-left transition ${isSolved ? "bg-success/20 text-muted-foreground line-through" : isPicked ? "bg-accent text-accent-foreground" : "bg-white hover:-translate-y-0.5"}`}
-              >{w}</button>
+              >
+                {w}
+              </button>
             );
           })}
         </div>
@@ -337,8 +401,14 @@ function TrueFalse({ items, onXP }: { items: TFItem[]; onXP: (n: number) => void
 
   function pick(v: boolean) {
     setPicked(v);
-    if (v === item.answer) { setScore((s) => s + 1); onXP(XP.trueFalseCorrect); }
-    window.setTimeout(() => { setPicked(null); setI((p) => p + 1); }, 1200);
+    if (v === item.answer) {
+      setScore((s) => s + 1);
+      onXP(XP.trueFalseCorrect);
+    }
+    window.setTimeout(() => {
+      setPicked(null);
+      setI((p) => p + 1);
+    }, 1200);
   }
 
   if (done) {
@@ -346,8 +416,18 @@ function TrueFalse({ items, onXP }: { items: TFItem[]; onXP: (n: number) => void
       <div className="glass-card p-8 text-center">
         <div className="text-5xl">🌟</div>
         <div className="mt-2 text-2xl font-black">Round complete!</div>
-        <div className="text-muted-foreground">You scored {score} / {items.length}</div>
-        <button onClick={() => { setI(0); setScore(0); }} className="mt-4 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground">Play again</button>
+        <div className="text-muted-foreground">
+          You scored {score} / {items.length}
+        </div>
+        <button
+          onClick={() => {
+            setI(0);
+            setScore(0);
+          }}
+          className="mt-4 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground"
+        >
+          Play again
+        </button>
       </div>
     );
   }
@@ -356,22 +436,30 @@ function TrueFalse({ items, onXP }: { items: TFItem[]; onXP: (n: number) => void
 
   return (
     <div className="glass-card p-8">
-      <div className="mb-2 text-xs font-semibold text-muted-foreground">Question {i + 1} / {items.length}</div>
+      <div className="mb-2 text-xs font-semibold text-muted-foreground">
+        Question {i + 1} / {items.length}
+      </div>
       <div className="text-2xl font-bold">{item.statement}</div>
       <div className="mt-6 grid grid-cols-2 gap-3">
         <button
           disabled={picked !== null}
           onClick={() => pick(true)}
-          className={`rounded-2xl p-5 text-lg font-bold transition ${picked === true ? correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground" : "bg-mint text-mint-foreground hover:-translate-y-0.5"}`}
-        >✅ True</button>
+          className={`rounded-2xl p-5 text-lg font-bold transition ${picked === true ? (correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground") : "bg-mint text-mint-foreground hover:-translate-y-0.5"}`}
+        >
+          ✅ True
+        </button>
         <button
           disabled={picked !== null}
           onClick={() => pick(false)}
-          className={`rounded-2xl p-5 text-lg font-bold transition ${picked === false ? correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground" : "bg-peach text-peach-foreground hover:-translate-y-0.5"}`}
-        >❌ False</button>
+          className={`rounded-2xl p-5 text-lg font-bold transition ${picked === false ? (correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground") : "bg-peach text-peach-foreground hover:-translate-y-0.5"}`}
+        >
+          ❌ False
+        </button>
       </div>
       {picked !== null && (
-        <div className={`mt-4 rounded-2xl p-4 text-sm ${correct ? "bg-success/20" : "bg-destructive/10"}`}>
+        <div
+          className={`mt-4 rounded-2xl p-4 text-sm ${correct ? "bg-success/20" : "bg-destructive/10"}`}
+        >
           {correct ? "Nice!" : "Not quite."} {item.explain}
         </div>
       )}
@@ -380,7 +468,13 @@ function TrueFalse({ items, onXP }: { items: TFItem[]; onXP: (n: number) => void
 }
 
 /* ---------------- Fill blanks ---------------- */
-function FillBlanks({ data, onXP }: { data: { dialogue: { speaker: string; line: string; blank: string | null }[]; options: string[] }; onXP: (n: number) => void }) {
+function FillBlanks({
+  data,
+  onXP,
+}: {
+  data: { dialogue: { speaker: string; line: string; blank: string | null }[]; options: string[] };
+  onXP: (n: number) => void;
+}) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [checked, setChecked] = useState(false);
   const options = useMemo(() => shuffle(data.options), [data]);
@@ -398,37 +492,65 @@ function FillBlanks({ data, onXP }: { data: { dialogue: { speaker: string; line:
 
   return (
     <div className="glass-card p-6">
-      <div className="mb-3 text-sm text-muted-foreground">Choose the right word for each blank.</div>
+      <div className="mb-3 text-sm text-muted-foreground">
+        Choose the right word for each blank.
+      </div>
       <div className="space-y-3">
         {data.dialogue.map((d, idx) => (
           <div key={idx} className="rounded-2xl bg-white p-4">
             <div className="text-xs font-bold uppercase text-muted-foreground">{d.speaker}</div>
             <div className="mt-1 text-base">
-              {d.blank ? renderWithBlank(d.line, (
-                <select
-                  value={answers[idx] ?? ""}
-                  onChange={(e) => setAnswers({ ...answers, [idx]: e.target.value })}
-                  disabled={checked}
-                  className={`mx-1 rounded-lg border px-2 py-1 text-sm font-bold ${checked ? answers[idx]?.toLowerCase() === d.blank?.toLowerCase() ? "border-success bg-success/20" : "border-destructive bg-destructive/10" : "border-primary bg-primary/10"}`}
-                >
-                  <option value="">___</option>
-                  {options.map((o) => <option key={o} value={o}>{o}</option>)}
-                </select>
-              )) : d.line}
+              {d.blank
+                ? renderWithBlank(
+                    d.line,
+                    <select
+                      value={answers[idx] ?? ""}
+                      onChange={(e) => setAnswers({ ...answers, [idx]: e.target.value })}
+                      disabled={checked}
+                      className={`mx-1 rounded-lg border px-2 py-1 text-sm font-bold ${checked ? (answers[idx]?.toLowerCase() === d.blank?.toLowerCase() ? "border-success bg-success/20" : "border-destructive bg-destructive/10") : "border-primary bg-primary/10"}`}
+                    >
+                      <option value="">___</option>
+                      {options.map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>,
+                  )
+                : d.line}
             </div>
           </div>
         ))}
       </div>
       <div className="mt-4 flex gap-3">
-        <button onClick={check} disabled={checked} className="rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground disabled:opacity-60">Check answers</button>
+        <button
+          onClick={check}
+          disabled={checked}
+          className="rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground disabled:opacity-60"
+        >
+          Check answers
+        </button>
         {checked && (
-          <button onClick={() => { setAnswers({}); setChecked(false); }} className="rounded-2xl bg-secondary px-5 py-3 font-bold">Try again</button>
+          <button
+            onClick={() => {
+              setAnswers({});
+              setChecked(false);
+            }}
+            className="rounded-2xl bg-secondary px-5 py-3 font-bold"
+          >
+            Try again
+          </button>
         )}
       </div>
       {checked && (
         <div className="mt-3 text-sm text-muted-foreground">
-          {Object.entries(answers).filter(([idx, v]) => data.dialogue[+idx].blank?.toLowerCase() === v.toLowerCase()).length}
-          {" / "}{blanks.length} correct
+          {
+            Object.entries(answers).filter(
+              ([idx, v]) => data.dialogue[+idx].blank?.toLowerCase() === v.toLowerCase(),
+            ).length
+          }
+          {" / "}
+          {blanks.length} correct
         </div>
       )}
     </div>
@@ -436,11 +558,27 @@ function FillBlanks({ data, onXP }: { data: { dialogue: { speaker: string; line:
 }
 function renderWithBlank(line: string, node: React.ReactNode) {
   const parts = line.split("____");
-  return <>{parts[0]}{node}{parts[1] ?? ""}</>;
+  return (
+    <>
+      {parts[0]}
+      {node}
+      {parts[1] ?? ""}
+    </>
+  );
 }
 
 /* ---------------- Quiz ---------------- */
-function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n: number) => void; onQuest?: (id: string) => void; onPerfect: () => void }) {
+function Quiz({
+  items,
+  onXP,
+  onQuest,
+  onPerfect,
+}: {
+  items: QuizItem[];
+  onXP: (n: number) => void;
+  onQuest?: (id: string) => void;
+  onPerfect: () => void;
+}) {
   const [i, setI] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -449,8 +587,14 @@ function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n
 
   function pick(idx: number) {
     setPicked(idx);
-    if (idx === item.answerIndex) { setScore((s) => s + 1); onXP(XP.quizCorrect); }
-    window.setTimeout(() => { setPicked(null); setI((p) => p + 1); }, 1200);
+    if (idx === item.answerIndex) {
+      setScore((s) => s + 1);
+      onXP(XP.quizCorrect);
+    }
+    window.setTimeout(() => {
+      setPicked(null);
+      setI((p) => p + 1);
+    }, 1200);
   }
 
   useEffect(() => {
@@ -463,11 +607,23 @@ function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n
     return (
       <div className="glass-card p-8 text-center">
         <div className="text-5xl">{score === items.length ? "🏆" : "🎯"}</div>
-        <div className="mt-2 text-2xl font-black">{score} / {items.length}</div>
-        <div className="text-sm text-muted-foreground">
-          {score === items.length ? "Perfect! Badge unlocked." : "Great job — try again for a perfect score!"}
+        <div className="mt-2 text-2xl font-black">
+          {score} / {items.length}
         </div>
-        <button onClick={() => { setI(0); setScore(0); }} className="mt-4 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground">Restart</button>
+        <div className="text-sm text-muted-foreground">
+          {score === items.length
+            ? "Perfect! Badge unlocked."
+            : "Great job — try again for a perfect score!"}
+        </div>
+        <button
+          onClick={() => {
+            setI(0);
+            setScore(0);
+          }}
+          className="mt-4 rounded-2xl bg-primary px-5 py-3 font-bold text-primary-foreground"
+        >
+          Restart
+        </button>
       </div>
     );
   }
@@ -475,7 +631,9 @@ function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n
   return (
     <div className="glass-card p-6 md:p-8">
       <div className="mb-2 flex items-center justify-between text-xs font-bold text-muted-foreground">
-        <span>Question {i + 1} / {items.length}</span>
+        <span>
+          Question {i + 1} / {items.length}
+        </span>
         <span>Score {score}</span>
       </div>
       <div className="text-xl font-bold">{item.question}</div>
@@ -489,11 +647,15 @@ function Quiz({ items, onXP, onQuest, onPerfect }: { items: QuizItem[]; onXP: (n
               disabled={picked !== null}
               onClick={() => pick(idx)}
               className={`rounded-2xl p-4 text-left font-semibold transition ${isRight ? "bg-success text-success-foreground" : isPicked ? "bg-destructive/80 text-destructive-foreground" : "bg-white hover:-translate-y-0.5"}`}
-            >{c}</button>
+            >
+              {c}
+            </button>
           );
         })}
       </div>
-      {picked !== null && <div className="mt-3 rounded-xl bg-secondary p-3 text-sm">{item.explain}</div>}
+      {picked !== null && (
+        <div className="mt-3 rounded-xl bg-secondary p-3 text-sm">{item.explain}</div>
+      )}
     </div>
   );
 }
@@ -503,7 +665,14 @@ function LuckyWheel({ prompts, onXP }: { prompts: string[]; onXP: (n: number) =>
   const [angle, setAngle] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [chosen, setChosen] = useState<string | null>(null);
-  const colors = ["var(--mint)", "var(--peach)", "var(--lavender)", "var(--sky)", "var(--lemon)", "var(--primary)"];
+  const colors = [
+    "var(--mint)",
+    "var(--peach)",
+    "var(--lavender)",
+    "var(--sky)",
+    "var(--lemon)",
+    "var(--primary)",
+  ];
 
   function spin() {
     if (spinning) return;
@@ -535,10 +704,16 @@ function LuckyWheel({ prompts, onXP }: { prompts: string[]; onXP: (n: number) =>
           }}
         >
           {prompts.map((_, i) => (
-            <div key={i} className="absolute left-1/2 top-1/2 h-1/2 w-px origin-top bg-white/40" style={{ transform: `rotate(${i * seg}deg)` }} />
+            <div
+              key={i}
+              className="absolute left-1/2 top-1/2 h-1/2 w-px origin-top bg-white/40"
+              style={{ transform: `rotate(${i * seg}deg)` }}
+            />
           ))}
         </div>
-        <div className="absolute left-1/2 top-1/2 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-black shadow-lg">🎡</div>
+        <div className="absolute left-1/2 top-1/2 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-2xl font-black shadow-lg">
+          🎡
+        </div>
         <div className="absolute -top-2 left-1/2 -translate-x-1/2 text-3xl">▼</div>
       </div>
       <div>
@@ -556,7 +731,9 @@ function LuckyWheel({ prompts, onXP }: { prompts: string[]; onXP: (n: number) =>
             <div className="mt-2 text-xs">Say it out loud or type your answer!</div>
           </div>
         )}
-        <div className="mt-4 text-xs text-muted-foreground">Practice speaking with a random prompt from today's lesson.</div>
+        <div className="mt-4 text-xs text-muted-foreground">
+          Practice speaking with a random prompt from today's lesson.
+        </div>
       </div>
     </div>
   );
@@ -568,13 +745,18 @@ export function BadgeShelf({ badges }: { badges: string[] }) {
     <section className="glass-card mt-8 p-6">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-xl">🏅 Your badges</h3>
-        <span className="text-xs text-muted-foreground">{badges.length} / {BADGES.length} unlocked</span>
+        <span className="text-xs text-muted-foreground">
+          {badges.length} / {BADGES.length} unlocked
+        </span>
       </div>
       <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
         {BADGES.map((b) => {
           const owned = badges.includes(b.id);
           return (
-            <div key={b.id} className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition ${owned ? "bg-lemon shadow-md" : "bg-white/50 opacity-50 grayscale"}`}>
+            <div
+              key={b.id}
+              className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition ${owned ? "bg-lemon shadow-md" : "bg-white/50 opacity-50 grayscale"}`}
+            >
               <div className="text-3xl">{b.emoji}</div>
               <div className="text-[11px] font-bold">{b.label}</div>
             </div>
@@ -595,7 +777,11 @@ export function Confetti() {
         <span
           key={i}
           className="confetti-piece absolute top-0 h-2 w-2 rounded-sm"
-          style={{ left: `${Math.random() * 100}%`, background: colors[i % colors.length], animationDelay: `${Math.random() * 0.6}s` }}
+          style={{
+            left: `${Math.random() * 100}%`,
+            background: colors[i % colors.length],
+            animationDelay: `${Math.random() * 0.6}s`,
+          }}
         />
       ))}
     </div>

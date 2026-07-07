@@ -40,7 +40,8 @@ export const Route = createFileRoute("/api/oauth/authorize")({
           return json({ error: "invalid_request" }, 400, CORS);
         }
 
-        const { client_id, redirect_uri, code_challenge, code_challenge_method, scope, state } = body;
+        const { client_id, redirect_uri, code_challenge, code_challenge_method, scope, state } =
+          body;
         if (!client_id || !redirect_uri) return json({ error: "invalid_request" }, 400, CORS);
 
         const { data: client } = await admin
@@ -65,9 +66,14 @@ export const Route = createFileRoute("/api/oauth/authorize")({
           scope: scope ?? "lumi.read lumi.write",
           expires_at,
         });
-        if (error) return json({ error: "server_error", error_description: error.message }, 500, CORS);
+        if (error)
+          return json({ error: "server_error", error_description: error.message }, 500, CORS);
 
-        await logEvent({ method: "authorize:code_minted", auth_valid: true, note: `client=${client_id} redirect=${redirect_uri}` });
+        await logEvent({
+          method: "authorize:code_minted",
+          auth_valid: true,
+          note: `client=${client_id} redirect=${redirect_uri}`,
+        });
         const url = new URL(redirect_uri);
         url.searchParams.set("code", code);
         if (state) url.searchParams.set("state", state);

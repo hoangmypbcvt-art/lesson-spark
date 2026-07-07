@@ -20,11 +20,7 @@ const COLUMNS = "id, title, topic, level, source, data, visibility, created_at";
 
 /** Fetch a single lesson by id (respects RLS: owner or public). */
 export async function fetchLesson(id: string): Promise<LessonRecord | null> {
-  const { data, error } = await supabase
-    .from("lessons")
-    .select(COLUMNS)
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await supabase.from("lessons").select(COLUMNS).eq("id", id).maybeSingle();
   if (error) {
     console.error("[lessons] fetchLesson failed:", error.message);
     return null;
@@ -33,7 +29,10 @@ export async function fetchLesson(id: string): Promise<LessonRecord | null> {
 }
 
 /** Update a lesson's share visibility (owner only, enforced by RLS). */
-export async function setLessonVisibility(id: string, visibility: Visibility): Promise<string | null> {
+export async function setLessonVisibility(
+  id: string,
+  visibility: Visibility,
+): Promise<string | null> {
   const { error } = await supabase.from("lessons").update({ visibility }).eq("id", id);
   return error ? error.message : null;
 }

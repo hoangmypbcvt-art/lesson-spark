@@ -48,14 +48,23 @@ export const Route = createFileRoute("/api/oauth/token")({
           if (!row) return json({ error: "invalid_grant" }, 400, CORS);
           if (row.client_id !== client_id) return json({ error: "invalid_grant" }, 400, CORS);
           if (row.redirect_uri && redirect_uri && row.redirect_uri !== redirect_uri) {
-            return json({ error: "invalid_grant", error_description: "redirect_uri mismatch" }, 400, CORS);
+            return json(
+              { error: "invalid_grant", error_description: "redirect_uri mismatch" },
+              400,
+              CORS,
+            );
           }
           if (new Date(row.expires_at).getTime() < Date.now()) {
             await admin.from("oauth_codes").delete().eq("code", code);
             return json({ error: "invalid_grant", error_description: "code expired" }, 400, CORS);
           }
-          const pkceOk = await verifyPkce(code_verifier, row.code_challenge, row.code_challenge_method);
-          if (!pkceOk) return json({ error: "invalid_grant", error_description: "PKCE failed" }, 400, CORS);
+          const pkceOk = await verifyPkce(
+            code_verifier,
+            row.code_challenge,
+            row.code_challenge_method,
+          );
+          if (!pkceOk)
+            return json({ error: "invalid_grant", error_description: "PKCE failed" }, 400, CORS);
 
           // One-time use.
           await admin.from("oauth_codes").delete().eq("code", code);

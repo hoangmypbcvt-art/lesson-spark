@@ -11,14 +11,9 @@ export const Route = createFileRoute("/api/test-key")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apiKey =
-          request.headers.get("x-coachio-key")?.trim() ||
-          process.env.COACHIO_API_KEY;
+        const apiKey = request.headers.get("x-coachio-key")?.trim() || process.env.COACHIO_API_KEY;
         if (!apiKey) {
-          return Response.json(
-            { ok: false, error: "No API key provided" },
-            { status: 400 },
-          );
+          return Response.json({ ok: false, error: "No API key provided" }, { status: 400 });
         }
 
         let upstream: Response;

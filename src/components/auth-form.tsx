@@ -66,7 +66,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
         </div>
         <h1 className="mt-3 text-3xl">{isLogin ? "Welcome back" : "Create your account"}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {isLogin ? "Log in to keep your XP, streaks & badges." : "Sign up to save your progress across devices."}
+          {isLogin
+            ? "Log in to keep your XP, streaks & badges."
+            : "Sign up to save your progress across devices."}
         </p>
       </div>
 
@@ -106,7 +108,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
           />
         </div>
 
-        {err && <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">⚠ {err}</div>}
+        {err && (
+          <div className="rounded-2xl bg-destructive/10 p-3 text-sm text-destructive">⚠ {err}</div>
+        )}
         {info && <div className="rounded-2xl bg-success/20 p-3 text-sm">✉️ {info}</div>}
 
         <button

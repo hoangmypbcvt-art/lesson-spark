@@ -27,7 +27,9 @@ function upsertPreviewHistory(entry: { id: string; title: string; xp: number; ni
       list.unshift({ ...entry, at: now });
     }
     localStorage.setItem(PREVIEW_HISTORY_KEY, JSON.stringify(list.slice(0, 50)));
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 function PreviewPage() {
@@ -41,7 +43,11 @@ function PreviewPage() {
   const [nickname, setNickname] = useState("");
 
   useEffect(() => {
-    try { setNickname(localStorage.getItem(NICK_KEY) || ""); } catch { /* ignore */ }
+    try {
+      setNickname(localStorage.getItem(NICK_KEY) || "");
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -52,32 +58,47 @@ function PreviewPage() {
       setRec(r);
       setState(r ? "ok" : "notfound");
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   function saveNickname(v: string) {
     setNickname(v);
-    try { localStorage.setItem(NICK_KEY, v); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(NICK_KEY, v);
+    } catch {
+      /* ignore */
+    }
   }
 
   // XP earned in the preview flows into the shared progress (Supabase when
   // signed in, localStorage when a guest) plus a local "studied previews" list.
-  const onXP = useCallback((n: number) => {
-    if (n <= 0) return;
-    setSessionXp((s) => s + n);
-    setProgress((prev) => applyXp(prev, n));
-    if (rec) {
-      upsertPreviewHistory({
-        id: rec.id,
-        title: rec.data.title,
-        xp: n,
-        nickname: (user?.email ?? nickname) || "Guest",
-      });
-    }
-  }, [rec, user, nickname, setProgress]);
+  const onXP = useCallback(
+    (n: number) => {
+      if (n <= 0) return;
+      setSessionXp((s) => s + n);
+      setProgress((prev) => applyXp(prev, n));
+      if (rec) {
+        upsertPreviewHistory({
+          id: rec.id,
+          title: rec.data.title,
+          xp: n,
+          nickname: (user?.email ?? nickname) || "Guest",
+        });
+      }
+    },
+    [rec, user, nickname, setProgress],
+  );
 
-  const onQuest = useCallback((qid: string) => setProgress((p) => markQuest(p, qid)), [setProgress]);
-  const awardBadge = useCallback((bid: string) => setProgress((p) => addBadge(p, bid)), [setProgress]);
+  const onQuest = useCallback(
+    (qid: string) => setProgress((p) => markQuest(p, qid)),
+    [setProgress],
+  );
+  const awardBadge = useCallback(
+    (bid: string) => setProgress((p) => addBadge(p, bid)),
+    [setProgress],
+  );
 
   const { level } = xpToLevel(progress.xp);
 
@@ -91,8 +112,15 @@ function PreviewPage() {
           This preview is private or doesn't exist. If it's yours, log in to open it.
         </p>
         <div className="mt-4 flex justify-center gap-2">
-          <Link to="/login" className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground">Log in</Link>
-          <Link to="/" className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold">Home</Link>
+          <Link
+            to="/login"
+            className="rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
+          >
+            Log in
+          </Link>
+          <Link to="/" className="rounded-2xl bg-secondary px-5 py-3 text-sm font-bold">
+            Home
+          </Link>
         </div>
       </CenterCard>
     );
@@ -105,17 +133,28 @@ function PreviewPage() {
       {/* Header */}
       <header className="glass-card flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between md:p-5">
         <div className="flex items-center gap-3">
-          <Link to="/" className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-black text-white shadow-md">L</Link>
+          <Link
+            to="/"
+            className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-primary to-accent text-lg font-black text-white shadow-md"
+          >
+            L
+          </Link>
           <div>
             <div className="text-lg font-black leading-none">Lumi · Shared lesson</div>
-            <div className="text-[11px] text-muted-foreground">Read-only preview · no AI actions</div>
+            <div className="text-[11px] text-muted-foreground">
+              Read-only preview · no AI actions
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="chip !bg-lemon">⚡ {sessionXp} XP this session</span>
-          <span className="chip !bg-lavender/70">Lv {level} · {levelTitle(level)}</span>
+          <span className="chip !bg-lavender/70">
+            Lv {level} · {levelTitle(level)}
+          </span>
           {user ? (
-            <span className="chip !bg-mint/70 max-w-[160px] truncate" title={user.email ?? ""}>👤 {user.email}</span>
+            <span className="chip !bg-mint/70 max-w-[160px] truncate" title={user.email ?? ""}>
+              👤 {user.email}
+            </span>
           ) : (
             <input
               value={nickname}
@@ -147,13 +186,23 @@ function PreviewPage() {
       <LessonPlayer lesson={lesson} onXP={onXP} onQuest={onQuest} awardBadge={awardBadge} hideAI />
 
       <footer className="mt-12 pb-8 text-center text-xs text-muted-foreground">
-        <Link to="/" className="hover:underline">Made with 💗 on Lumi — create your own lesson →</Link>
+        <Link to="/" className="hover:underline">
+          Made with 💗 on Lumi — create your own lesson →
+        </Link>
       </footer>
     </div>
   );
 }
 
-function CenterCard({ emoji, title, children }: { emoji: string; title: string; children?: React.ReactNode }) {
+function CenterCard({
+  emoji,
+  title,
+  children,
+}: {
+  emoji: string;
+  title: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 text-center">
       <div className="glass-card p-8">

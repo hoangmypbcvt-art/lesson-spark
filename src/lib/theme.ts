@@ -8,8 +8,7 @@ const THEME_STORAGE = "lumi:theme:v1";
 export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("${THEME_STORAGE}")||"system";var m=window.matchMedia("(prefers-color-scheme: dark)").matches;var dark=t==="dark"||(t==="system"&&m);document.documentElement.classList.toggle("dark",dark);}catch(e){}})();`;
 
 function systemPrefersDark(): boolean {
-  return typeof window !== "undefined" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
 function resolve(theme: Theme): boolean {

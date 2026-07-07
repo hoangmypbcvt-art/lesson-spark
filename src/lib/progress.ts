@@ -107,7 +107,9 @@ export function useProgress() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setP({ ...DEFAULT_PROGRESS, ...JSON.parse(raw) });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   // Pull from Supabase when the signed-in user changes.
@@ -142,14 +144,18 @@ export function useProgress() {
       syncReady.current = true;
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id]);
 
   // Persist on every change: always to localStorage, and (debounced) to the DB.
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
 
     const userId = user?.id;
     if (!userId || !syncReady.current) return;
