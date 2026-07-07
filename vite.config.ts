@@ -18,9 +18,9 @@ export default defineConfig({
   nitro: {
     vercel: {
       functionRules: {
-        "/mcp": { maxDuration: 60 },
-        "/api/lesson": { maxDuration: 60 },
-        "/api/vocab-image": { maxDuration: 100 },
+        "/mcp": { maxDuration: "max" },
+        "/api/lesson": { maxDuration: "max" },
+        "/api/vocab-image": { maxDuration: "max" },
       },
     },
   },
