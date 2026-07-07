@@ -22,9 +22,19 @@ LOG="/tmp/claude-autopush.log"
   git add -A
   git commit -q -m "Auto-update $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-  if git push origin main; then
+  pushed=false
+  for attempt in 1 2 3; do
+    if git push origin main; then
+      pushed=true
+      break
+    fi
+    echo "push attempt $attempt failed, retrying in 5s..."
+    sleep 5
+  done
+
+  if [ "$pushed" = true ]; then
     echo "pushed to origin/main"
   else
-    echo "push failed (check git credentials / remote)"
+    echo "push failed after 3 attempts (check network / git credentials) - commit is saved locally, run 'git push' manually"
   fi
 } >> "$LOG" 2>&1
